@@ -1,4 +1,6 @@
 package com.tgra;
+import java.nio.FloatBuffer;
+
 import com.badlogic.gdx.graphics.GL11;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -7,9 +9,14 @@ import com.badlogic.gdx.Input;
 
 public class First3D_Core implements ApplicationListener
 {
+	private final float SIZE = 20;
+	
 	Camera cam;
 	
 	private Cube cube;
+	
+	private Floor floor;
+	private Border border;
 	
 	float rotationAngle = 0.0f;
 	
@@ -18,7 +25,8 @@ public class First3D_Core implements ApplicationListener
 	@Override
 	public void create()
 	{
-		
+		this.floor = new Floor("lavafloor.png");
+		this.border = new Border("wall.png");
 		this.cube = new Cube("Wood_Box_Texture.jpg");
 		
 		Gdx.gl11.glEnable(GL11.GL_LIGHTING);
@@ -36,7 +44,7 @@ public class First3D_Core implements ApplicationListener
 
 		Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 
-		cam = new Camera(new Point3D(-2.5f, 0.2f, 1.5f), new Point3D(0.0f, 0.0f, 0.0f), new Vector3D(0.0f, 1.0f, 0.0f));
+		cam = new Camera(new Point3D(1.0f, 0.0f, 1.0f), new Point3D(10.0f, 0.0f, 10.0f), new Vector3D(0.0f, 1.0f, 0.0f));
 		
 		elapsedTime = 0.0f;
 	}
@@ -61,7 +69,7 @@ public class First3D_Core implements ApplicationListener
 		
 		rotationAngle += 90.0f * deltaTime;
 
-		if(Gdx.input.isKeyPressed(Input.Keys.UP))
+		/*if(Gdx.input.isKeyPressed(Input.Keys.UP))
 		{
 			cam.pitch(-90.0f * deltaTime);
 		}
@@ -76,22 +84,24 @@ public class First3D_Core implements ApplicationListener
 		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
 		{
 			cam.yaw(90.0f * deltaTime);
-		}
+		}*/
 		if(Gdx.input.isKeyPressed(Input.Keys.W))
 		{
-			cam.slide(0.0f, 0.0f, -10.0f * deltaTime);
+			cam.slide(0.0f, 0.0f, -5.0f * deltaTime);
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.S))
 		{
-			cam.slide(0.0f, 0.0f, 10.0f * deltaTime);
+			cam.slide(0.0f, 0.0f, 5.0f * deltaTime);
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.A))
 		{
-			cam.slide(-10.0f * deltaTime, 0.0f, 0.0f);
+			//cam.slide(-10.0f * deltaTime, 0.0f, 0.0f);
+			cam.yaw(-180.0f * deltaTime);
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.D))
 		{
-			cam.slide(10.0f * deltaTime, 0.0f, 0.0f);
+			//cam.slide(10.0f * deltaTime, 0.0f, 0.0f);
+			cam.yaw(180.0f * deltaTime);
 		}
 		
 
@@ -135,6 +145,30 @@ public class First3D_Core implements ApplicationListener
 		Gdx.gl11.glRotatef(rotationAngle, 0.0f, 1.0f, 0.0f);
 		this.cube.draw();
 		Gdx.gl11.glPopMatrix();
+		
+		this.drawFloor();
+		this.drawBorder();
+	}
+	
+	private void drawFloor(){
+		for(float fx = 0.0f; fx < SIZE; fx += 1.0){
+			for(float fz = 0.0f; fz < SIZE; fz += 1.0){
+				Gdx.gl11.glPushMatrix();
+				Gdx.gl11.glTranslatef(fx, -1.0f, fz);
+				floor.draw();
+				Gdx.gl11.glPopMatrix();
+			}
+		}
+	}
+	
+	private void drawBorder(){
+		for(float fx = 0.0f; fx < SIZE; fx += 1.0f){
+			Gdx.gl11.glPushMatrix();
+			Gdx.gl11.glTranslatef(fx, -1.0f, 0.0f);
+			//Gdx.gl11.glRotatef(90, 0.0f, 1.0f, 0.0f);
+			border.draw();
+			Gdx.gl11.glPopMatrix();
+		}
 	}
 
 	@Override
