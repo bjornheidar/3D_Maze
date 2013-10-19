@@ -1,5 +1,8 @@
 package com.tgra;
+
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.badlogic.gdx.graphics.GL11;
 import com.badlogic.gdx.ApplicationListener;
@@ -17,6 +20,7 @@ public class First3D_Core implements ApplicationListener
 	
 	private Floor floor;
 	private Border border;
+	private List<Border> walls;
 	
 	float rotationAngle = 0.0f;
 	
@@ -26,8 +30,12 @@ public class First3D_Core implements ApplicationListener
 	public void create()
 	{
 		this.floor = new Floor("lavafloor.png");
-		this.border = new Border("wall.png");
+		//this.border = new Border(10, );
 		this.cube = new Cube("Wood_Box_Texture.jpg");
+		this.walls = new ArrayList<Border>();
+		
+		initBorders();
+		initMaze1();
 		
 		Gdx.gl11.glEnable(GL11.GL_LIGHTING);
 		Gdx.gl11.glEnable(GL11.GL_LIGHT0);
@@ -44,7 +52,7 @@ public class First3D_Core implements ApplicationListener
 
 		Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 
-		cam = new Camera(new Point3D(1.0f, 0.0f, 1.0f), new Point3D(10.0f, 0.0f, 10.0f), new Vector3D(0.0f, 1.0f, 0.0f));
+		cam = new Camera(new Point3D(0.5f, 1.0f, 1.0f), new Point3D(0.0f, 1.0f, 10.0f), new Vector3D(0.0f, 1.0f, 0.0f));
 		
 		elapsedTime = 0.0f;
 	}
@@ -86,9 +94,17 @@ public class First3D_Core implements ApplicationListener
 			cam.yaw(90.0f * deltaTime);
 		}*/
 		if(Gdx.input.isKeyPressed(Input.Keys.UP))
-		{
+		{ 
 			cam.slide(0.0f, 0.0f, -5.0f * deltaTime);
+			
+			System.out.println(cam.u.x);
+			System.out.println(cam.u.y);
+			System.out.println(cam.u.z);
 		}
+		if(cam.eye.x < 0)
+			cam.eye.x = 0.15f;
+		if(cam.eye.x > SIZE)
+			cam.eye.x = SIZE - 0.01f;
 		if(Gdx.input.isKeyPressed(Input.Keys.DOWN))
 		{
 			cam.slide(0.0f, 0.0f, 5.0f * deltaTime);
@@ -141,28 +157,47 @@ public class First3D_Core implements ApplicationListener
 		//movCube.display();
 
 		Gdx.gl11.glPushMatrix();
-		Gdx.gl11.glTranslatef(1.0f, 1.0f, 1.0f);
+		Gdx.gl11.glTranslatef(1.0f, 2.0f, 1.0f);
 		Gdx.gl11.glRotatef(rotationAngle, 0.0f, 1.0f, 0.0f);
 		this.cube.draw();
 		Gdx.gl11.glPopMatrix();
 		
 		this.drawFloor();
 		this.drawBorder();
-		this.drawWalls();
+		//this.drawWalls();
 	}
 	
 	private void drawFloor(){
 		for(float fx = 0.0f; fx < SIZE; fx += 1.0){
 			for(float fz = 0.0f; fz < SIZE; fz += 1.0){
 				Gdx.gl11.glPushMatrix();
-				Gdx.gl11.glTranslatef(fx, -1.0f, fz);
+				Gdx.gl11.glTranslatef(fx, 0.0f, fz);
 				floor.draw();
 				Gdx.gl11.glPopMatrix();
 			}
 		}
 	}
 	
+	private void initBorders() {
+		for(float fx = 0.0f; fx < SIZE; fx++){
+			this.walls.add(new Border(10, fx, -0.1f, false));
+			this.walls.add(new Border(10, fx, SIZE+0.1f, false));
+			this.walls.add(new Border(10, -0.1f, fx, true));
+			this.walls.add(new Border(10, SIZE+0.1f, fx, true));
+		}
+	}
+	
+	private void initMaze1(){
+		for(float fx = 0.0f; fx < 3.0f; fx++){
+			this.walls.add(new Border(10, 1.5f, fx, true));
+		}
+	}
+	
 	private void drawBorder(){
+		for(Border w : walls){
+			w.draw();
+		}
+		/*
 		for(float fx = 0.0f; fx < SIZE; fx += 1.0f){
 			Gdx.gl11.glPushMatrix();
 			Gdx.gl11.glTranslatef(fx, -1.0f, 0.0f);
@@ -187,9 +222,9 @@ public class First3D_Core implements ApplicationListener
 			Gdx.gl11.glTranslatef(fx, -1.0f, SIZE);
 			border.draw();
 			Gdx.gl11.glPopMatrix();
-		}
+		}*/
 	}
-	
+	/*
 	private void drawWalls(){
 		for(float fx = 0.0f; fx > -7; fx -= 1.0f){
 			Gdx.gl11.glPushMatrix();
@@ -198,7 +233,7 @@ public class First3D_Core implements ApplicationListener
 			Gdx.gl11.glPopMatrix();
 		}
 	}
-
+*/
 	@Override
 	public void render() {
 		update();

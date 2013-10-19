@@ -16,8 +16,8 @@ public class Floor {
 	public Floor(String textureImage)
 	{
 		vertexBuffer = BufferUtils.newFloatBuffer(12);
-		vertexBuffer.put(new float[] {-0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f,
-									  0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f});
+		vertexBuffer.put(new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+									  1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f});
 		vertexBuffer.rewind();
 		
 		texCoordBuffer = BufferUtils.newFloatBuffer(48);

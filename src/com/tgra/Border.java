@@ -8,16 +8,26 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.BufferUtils;
 
 public class Border {
-	FloatBuffer vertexBuffer;
-	FloatBuffer texCoordBuffer;
+	static FloatBuffer vertexBuffer;
+	static FloatBuffer texCoordBuffer;
+	static Texture tex = new Texture(Gdx.files.internal("assets/textures/" + "wall.png"));
 	
-	Texture tex;
+	private int thickness;
+	private Point3D position;
+	private boolean direction;
 	
-	public Border(String textureImage)
+	public Border(int thickness, float posX, float posZ, boolean direction)
 	{
-		vertexBuffer = BufferUtils.newFloatBuffer(12);
-		vertexBuffer.put(new float[] {-0.5f, 0.5f, -0.5f, -0.5f, 1.5f, -0.5f,
-									  0.5f, 0.5f, -0.5f, 0.5f, 1.5f, -0.5f});
+		this.thickness = thickness;
+		this.position = new Point3D(posX, 0.0f, posZ);
+		this.direction = direction;
+		
+		vertexBuffer = BufferUtils.newFloatBuffer(24);
+		vertexBuffer.put(new float[] {0.0f, 0.0f, -0.1f, 0.0f, 1.5f, -0.1f,
+									  1.0f, 0.0f, -0.1f, 1.0f, 1.5f, -0.1f,
+									  
+									  0.0f, 0.0f, -0.1f, 0.0f, 1.5f, -0.1f,
+									  0.0f, 0.0f, 0.1f, 0.0f, 1.5f, 0.1f});
 		vertexBuffer.rewind();
 		
 		texCoordBuffer = BufferUtils.newFloatBuffer(48);
@@ -27,15 +37,19 @@ public class Border {
 										0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 										0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 										0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f});
-		texCoordBuffer.rewind();
-		
-		tex = new Texture(Gdx.files.internal("assets/textures/" + textureImage));
-		
-		
+		texCoordBuffer.rewind();		
 	}
 	
 	
 	public void draw(){
+		Gdx.gl11.glPushMatrix();
+		
+		Gdx.gl11.glTranslatef(position.x, position.y, position.z);
+		
+		if(direction){
+			Gdx.gl11.glRotatef(-90, 0.0f, 1.0f, 0.0f);
+		}
+		
 		Gdx.gl11.glShadeModel(GL11.GL_SMOOTH);
 		Gdx.gl11.glVertexPointer(3, GL11.GL_FLOAT, 0, vertexBuffer);
 		
@@ -48,8 +62,23 @@ public class Border {
 		
 		Gdx.gl11.glNormal3f(0.0f, 1.0f, 0.0f);
 		Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+		//small sides
+		Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 4, 4);
+		Gdx.gl11.glTranslatef(1.0f, 0.0f, 0.0f);
+		Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 4, 4);
+		
+		Gdx.gl11.glTranslatef(-1.0f, 0.0f, 0.2f);
+		Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+		
+		
 		
 		Gdx.gl11.glDisable(GL11.GL_TEXTURE_2D);
 		Gdx.gl11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+		
+		Gdx.gl11.glPopMatrix();
+	}
+	
+	public int getThickness(){
+		return this.thickness;
 	}
 }
