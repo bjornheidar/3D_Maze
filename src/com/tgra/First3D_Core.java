@@ -85,20 +85,20 @@ public class First3D_Core implements ApplicationListener
 		{
 			cam.yaw(90.0f * deltaTime);
 		}*/
-		if(Gdx.input.isKeyPressed(Input.Keys.W))
+		if(Gdx.input.isKeyPressed(Input.Keys.UP))
 		{
 			cam.slide(0.0f, 0.0f, -5.0f * deltaTime);
 		}
-		if(Gdx.input.isKeyPressed(Input.Keys.S))
+		if(Gdx.input.isKeyPressed(Input.Keys.DOWN))
 		{
 			cam.slide(0.0f, 0.0f, 5.0f * deltaTime);
 		}
-		if(Gdx.input.isKeyPressed(Input.Keys.A))
+		if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
 		{
 			//cam.slide(-10.0f * deltaTime, 0.0f, 0.0f);
 			cam.yaw(-180.0f * deltaTime);
 		}
-		if(Gdx.input.isKeyPressed(Input.Keys.D))
+		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
 		{
 			//cam.slide(10.0f * deltaTime, 0.0f, 0.0f);
 			cam.yaw(180.0f * deltaTime);
@@ -148,6 +148,7 @@ public class First3D_Core implements ApplicationListener
 		
 		this.drawFloor();
 		this.drawBorder();
+		this.drawWalls();
 	}
 	
 	private void drawFloor(){
@@ -165,7 +166,34 @@ public class First3D_Core implements ApplicationListener
 		for(float fx = 0.0f; fx < SIZE; fx += 1.0f){
 			Gdx.gl11.glPushMatrix();
 			Gdx.gl11.glTranslatef(fx, -1.0f, 0.0f);
-			//Gdx.gl11.glRotatef(90, 0.0f, 1.0f, 0.0f);
+			border.draw();
+			Gdx.gl11.glPopMatrix();
+			
+			Gdx.gl11.glPushMatrix();
+			Gdx.gl11.glTranslatef(fx, -1.0f, SIZE);
+			border.draw();
+			Gdx.gl11.glPopMatrix();
+		}
+		
+		Gdx.gl11.glRotatef(90, 0.0f, 1.0f, 0.0f);
+		
+		for(float fx = 0.0f; fx > -SIZE; fx -= 1.0){
+			Gdx.gl11.glPushMatrix();
+			Gdx.gl11.glTranslatef(fx, -1.0f, 0.0f);
+			border.draw();
+			Gdx.gl11.glPopMatrix();
+			
+			Gdx.gl11.glPushMatrix();
+			Gdx.gl11.glTranslatef(fx, -1.0f, SIZE);
+			border.draw();
+			Gdx.gl11.glPopMatrix();
+		}
+	}
+	
+	private void drawWalls(){
+		for(float fx = 0.0f; fx > -7; fx -= 1.0f){
+			Gdx.gl11.glPushMatrix();
+			Gdx.gl11.glTranslatef(fx, -1.0f, 2.0f);
 			border.draw();
 			Gdx.gl11.glPopMatrix();
 		}
