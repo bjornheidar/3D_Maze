@@ -26,4 +26,8 @@ public class Point3D
 		y += v.y;
 		z += v.z;
 	}
+	
+	public float dis(Point3D p){
+		return (float)Math.sqrt(Math.pow(p.x - this.x, 2) + Math.pow(p.z - this.z, 2));
+	}
 }

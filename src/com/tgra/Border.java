@@ -11,20 +11,29 @@ public class Border {
 	static FloatBuffer vertexBuffer;
 	static FloatBuffer texCoordBuffer;
 	static Texture tex = new Texture(Gdx.files.internal("assets/textures/" + "wall.png"));
-	
-	private int thickness;
+
 	private Point3D position;
 	private boolean direction;
+	boolean [] renderSides;
 	
-	public Border(int thickness, float posX, float posZ, boolean direction)
+	public Border(float posX, float posZ, boolean direction){
+		this.initialize(posX, posZ, direction);
+		this.renderSides = new boolean [] {true, true, true, true};
+	}
+	
+	public Border(float posX, float posZ, boolean direction, boolean [] renderSides)
 	{
-		this.thickness = thickness;
+		this.initialize(posX, posZ, direction);
+		this.renderSides = renderSides;
+	}
+	
+	private void initialize(float posX, float posZ, boolean direction){
 		this.position = new Point3D(posX, 0.0f, posZ);
 		this.direction = direction;
 		
 		vertexBuffer = BufferUtils.newFloatBuffer(24);
-		vertexBuffer.put(new float[] {0.0f, 0.0f, -0.1f, 0.0f, 1.5f, -0.1f,
-									  1.0f, 0.0f, -0.1f, 1.0f, 1.5f, -0.1f,
+		vertexBuffer.put(new float[] {-0.1f, 0.0f, -0.1f, -0.1f, 1.5f, -0.1f,
+									  1.1f, 0.0f, -0.1f, 1.1f, 1.5f, -0.1f,
 									  
 									  0.0f, 0.0f, -0.1f, 0.0f, 1.5f, -0.1f,
 									  0.0f, 0.0f, 0.1f, 0.0f, 1.5f, 0.1f});
@@ -40,6 +49,14 @@ public class Border {
 		texCoordBuffer.rewind();		
 	}
 	
+	public Point3D getPos(){
+		return this.position;
+	}
+	
+	//True is east/west, false is north/south
+	public boolean getOrientation(){
+		return this.direction;
+	}
 	
 	public void draw(){
 		Gdx.gl11.glPushMatrix();
@@ -61,14 +78,19 @@ public class Border {
 		Gdx.gl11.glTexCoordPointer(2, GL11.GL_FLOAT, 0, texCoordBuffer);
 		
 		Gdx.gl11.glNormal3f(0.0f, 1.0f, 0.0f);
-		Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+		if(this.renderSides[0])
+			Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
 		//small sides
-		Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 4, 4);
-		Gdx.gl11.glTranslatef(1.0f, 0.0f, 0.0f);
-		Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 4, 4);
+		Gdx.gl11.glTranslatef(-0.1f, 0.0f, 0.0f);
+		if(this.renderSides[1])
+			Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 4, 4);
+		Gdx.gl11.glTranslatef(1.2f, 0.0f, 0.0f);
+		if(this.renderSides[2])
+			Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 4, 4);
 		
-		Gdx.gl11.glTranslatef(-1.0f, 0.0f, 0.2f);
-		Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+		Gdx.gl11.glTranslatef(-1.1f, 0.0f, 0.2f);
+		if(this.renderSides[3])
+			Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
 		
 		
 		
@@ -76,9 +98,5 @@ public class Border {
 		Gdx.gl11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 		
 		Gdx.gl11.glPopMatrix();
-	}
-	
-	public int getThickness(){
-		return this.thickness;
 	}
 }

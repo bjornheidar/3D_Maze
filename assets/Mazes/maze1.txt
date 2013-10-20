@@ -1,0 +1,31 @@
+//Finish, x, z, mesh  ** if multiple, random ending point
+//Starting, x, z  ** if multiple, random starting point
+//Wall, x, z, direction ** direction : false => x, true => z
+
+Starting,1,1
+Starting,1,19
+
+finish,10,10
+
+wall,0,18,false
+wall,1,18,false
+wall,2,18,false
+wall,3,18,false
+wall,4,18,false
+wall,5,18,false
+wall,1.5,19,true
+wall,3,18,true
+wall,4.5,19,true
+wall,6,18,true
+
+wall,18,2,false
+wall,17,2,false
+wall,16,2,false
+wall,15,2,false
+wall,14,2,false
+wall,18,0,true
+wall,17,1,true
+wall,16,0,true
+wall,15,1,true
+wall,14,0,true
+wall,14,1,true
