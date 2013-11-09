@@ -1,5 +1,6 @@
 package com.tgra;
 
+import java.awt.GraphicsDevice;
 import java.io.FileReader;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -7,6 +8,8 @@ import java.util.List;
 import java.util.Random;
 
 import com.badlogic.gdx.graphics.GL11;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -28,11 +31,14 @@ public class First3D_Core implements ApplicationListener
 	float rotationAngle = 0.0f;
 	
 	float elapsedTime;
+	long idleTime;
+	long deadTime;
+	private boolean dead = false;
 	
 	@Override
 	public void create()
 	{
-		this.floor = new Floor("lavafloor.png");
+		this.floor = new Floor("sand_floor.png");
 		this.cube = new Cube("Wood_Box_Texture.jpg");
 		this.walls = new ArrayList<Border>();
 		this.adjacentWalls = new ArrayList<Border>();
@@ -40,6 +46,8 @@ public class First3D_Core implements ApplicationListener
 		Gdx.gl11.glEnable(GL11.GL_LIGHTING);
 		Gdx.gl11.glEnable(GL11.GL_LIGHT0);
 		Gdx.gl11.glEnable(GL11.GL_LIGHT1);
+		//Gdx.gl11.glEnable(GL11.GL_LIGHT2);
+		//Gdx.gl11.glEnable(GL11.GL_LIGHT3);
 		Gdx.gl11.glEnable(GL11.GL_DEPTH_TEST);
 		
 		Gdx.gl11.glEnable(GL11.GL_NORMALIZE);
@@ -80,15 +88,15 @@ public class First3D_Core implements ApplicationListener
 		
 		rotationAngle += 90.0f * deltaTime;
 
-		/*if(Gdx.input.isKeyPressed(Input.Keys.UP))
+		if(Gdx.input.isKeyPressed(Input.Keys.W))
 		{
 			cam.pitch(-90.0f * deltaTime);
 		}
-		if(Gdx.input.isKeyPressed(Input.Keys.DOWN))
+		if(Gdx.input.isKeyPressed(Input.Keys.S))
 		{
 			cam.pitch(90.0f * deltaTime);
 		}
-		if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
+		/*if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
 		{
 			cam.yaw(-90.0f * deltaTime);
 		}
@@ -96,23 +104,44 @@ public class First3D_Core implements ApplicationListener
 		{
 			cam.yaw(90.0f * deltaTime);
 		}*/
-		if(Gdx.input.isKeyPressed(Input.Keys.UP))
-		{ 
-			cam.slide(0.0f, 0.0f, -5.0f * deltaTime);
+		
+		//the player dies if he sinks too deep into the quicksand
+		if(cam.eye.y < 0.5f){
+			dead = true;
+			if(System.currentTimeMillis() - deadTime > 5000){
+				Gdx.app.exit();
+			}
 		}
-		if(Gdx.input.isKeyPressed(Input.Keys.DOWN))
-		{
-			cam.slide(0.0f, 0.0f, 5.0f * deltaTime);
-		}
-		if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
-		{
-			//cam.slide(-10.0f * deltaTime, 0.0f, 0.0f);
-			cam.yaw(-180.0f * deltaTime);
-		}
-		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
-		{
-			//cam.slide(10.0f * deltaTime, 0.0f, 0.0f);
-			cam.yaw(180.0f * deltaTime);
+		
+		//the player starts sinking if he stands idle for too long
+		/*if(System.currentTimeMillis() - idleTime > 1500 && cam.eye.y > 0.1f){
+			cam.eye.y -= 0.0025f;
+			deadTime = System.currentTimeMillis();
+		}*/
+		
+		if(!dead){
+			if(Gdx.input.isKeyPressed(Input.Keys.UP))
+			{ 
+				idleTime = System.currentTimeMillis();
+				cam.eye.y = 1.0f;
+				cam.slide(0.0f, 0.0f, -5.0f * deltaTime);
+			}
+			if(Gdx.input.isKeyPressed(Input.Keys.DOWN))
+			{
+				idleTime = System.currentTimeMillis();
+				cam.eye.y = 1.0f;
+				cam.slide(0.0f, 0.0f, 5.0f * deltaTime);
+			}
+			if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
+			{
+				//cam.slide(-10.0f * deltaTime, 0.0f, 0.0f);
+				cam.yaw(-180.0f * deltaTime);
+			}
+			if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+			{
+				//cam.slide(10.0f * deltaTime, 0.0f, 0.0f);
+				cam.yaw(180.0f * deltaTime);
+			}
 		}
 		
 		//Collision detection and handling
@@ -181,32 +210,51 @@ public class First3D_Core implements ApplicationListener
 		cam.setModelViewMatrix();
 		
 
-		float[] lightDiffuse = {1.0f, 1.0f, 1.0f, 1.0f};
+		float[] lightDiffuse = {0.8f, 0.8f, 0.8f, 1.0f};
 		Gdx.gl11.glLightfv(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, lightDiffuse, 0);
 
-		float[] lightPosition = {5.0f, 10.0f, 15.0f, 1.0f};
+		float[] lightPosition = {cam.eye.x, cam.eye.y+2, cam.eye.z, 1.0f};
 		Gdx.gl11.glLightfv(GL11.GL_LIGHT0, GL11.GL_POSITION, lightPosition, 0);
 
-		float[] lightDiffuse1 = {0.5f, 0.5f, 0.5f, 1.0f};
+		/*float[] lightDiffuse1 = {0.5f, 0.5f, 0.5f, 1.0f};
 		Gdx.gl11.glLightfv(GL11.GL_LIGHT1, GL11.GL_DIFFUSE, lightDiffuse1, 0);
 
-		float[] lightPosition1 = {-5.0f, -10.0f, -15.0f, 1.0f};
-		Gdx.gl11.glLightfv(GL11.GL_LIGHT1, GL11.GL_POSITION, lightPosition1, 0);
+		float[] lightPosition1 = {cam.eye.x, cam.eye.y, cam.eye.z, 0.0f};
+		Gdx.gl11.glLightfv(GL11.GL_LIGHT1, GL11.GL_POSITION, lightPosition1, 0);*/
+		
+		/*float[] lightAmbience = {1.5f, 1.5f, 1.5f, 1.0f};
+		Gdx.gl11.glLightfv(GL11.GL_LIGHT1, GL11.GL_AMBIENT, lightAmbience, 0);
+		
+		float[] lightPostition1 = {cam.eye.x, cam.eye.y+1, cam.eye.z, 1.0f};
+		Gdx.gl11.glLightfv(GL11.GL_LIGHT1, GL11.GL_POSITION, lightPostition1, 0);
+		
+		/*float[] lightSpecular = {1.0f, 1.0f, 1.0f, 1.0f};
+		Gdx.gl11.glLightfv(GL11.GL_LIGHT3, GL11.GL_SPECULAR, lightSpecular, 0);
+		
+		float[] lightPostition3 = {cam.eye.x, cam.eye.y, cam.eye.z, 1.0f};
+		Gdx.gl11.glLightfv(GL11.GL_LIGHT3, GL11.GL_POSITION, lightPostition3, 0);
+		
+		float[] materialSpecular = {0.5f, 0.5f, 0.5f, 1.0f};
+		Gdx.gl11.glMaterialfv(GL11.GL_FRONT, GL11.GL_SPECULAR, materialSpecular, 0);*/
+		
+		/*float[] materialAmbience = {0.3f, 0.3f, 0.3f, 1.0f};
+		Gdx.gl11.glMaterialfv(GL11.GL_FRONT, GL11.GL_AMBIENT, materialAmbience, 0);
 
-		float[] materialDiffuse = {1.0f, 1.0f, 1.0f, 1.0f};
-		Gdx.gl11.glMaterialfv(GL11.GL_FRONT, GL11.GL_DIFFUSE, materialDiffuse, 0);
+		/*float[] materialDiffuse = {0.2f, 0.2f, 0.2f, 1.0f};
+		Gdx.gl11.glMaterialfv(GL11.GL_FRONT, GL11.GL_DIFFUSE, materialDiffuse, 0);*/
 
 		//movCube.display();
 
 		Gdx.gl11.glPushMatrix();
 		Gdx.gl11.glTranslatef(1.0f, 2.0f, 1.0f);
 		Gdx.gl11.glRotatef(rotationAngle, 0.0f, 1.0f, 0.0f);
-		this.cube.draw();
+		//this.cube.draw();
 		Gdx.gl11.glPopMatrix();
 		
 		this.drawFloor();
 		this.drawBorder();
 		//this.drawWalls();
+		
 	}
 	
 	private void drawFloor(){
