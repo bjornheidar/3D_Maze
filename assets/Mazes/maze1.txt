@@ -4,15 +4,15 @@
 
 Starting,1,1
 Starting,1,19
-Starting,16.5,19
+Starting,16.8,19
 Starting,13,1
 
 finish,1,1
 finish,1,19
-finish,16.5,19
+finish,16.8,19
 finish,13,1
 finish,13,14.5
-finish,13,9
+finish,13,9.3
 finish,4.5,9
 
 wall,0,18,false

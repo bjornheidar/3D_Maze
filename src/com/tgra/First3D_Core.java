@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL11;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -21,6 +22,7 @@ public class First3D_Core implements ApplicationListener
 	private final float SIZE = 20;
 	
 	Camera cam;
+	private Sphere sphere = null;
 	
 	private Cube cube;
 	
@@ -33,15 +35,27 @@ public class First3D_Core implements ApplicationListener
 	float elapsedTime;
 	long idleTime;
 	long deadTime;
+	long wonTime;
 	private boolean dead = false;
+	private boolean won = false;
+	
+	Point3D endPoint = null;
+	
+	private Sound winSound;
+	private Sound gameSound;
 	
 	@Override
 	public void create()
 	{
 		this.floor = new Floor("sand_floor.png");
-		this.cube = new Cube("Wood_Box_Texture.jpg");
+		this.cube = new Cube("confetti.png");
 		this.walls = new ArrayList<Border>();
 		this.adjacentWalls = new ArrayList<Border>();
+		
+		sphere = new Sphere(30,60);
+		
+		winSound =  Gdx.audio.newSound(Gdx.files.internal("assets/Sounds/winning.wav"));
+		gameSound = Gdx.audio.newSound(Gdx.files.internal("assets/Sounds/gameSound.wav"));
 		
 		Gdx.gl11.glEnable(GL11.GL_LIGHTING);
 		Gdx.gl11.glEnable(GL11.GL_LIGHT0);
@@ -66,6 +80,7 @@ public class First3D_Core implements ApplicationListener
 		//cam = new Camera(new Point3D(1.0f, 1.0f, 19.0f), new Point3D((float)SIZE / 2, 1.0f, (float)SIZE / 2), new Vector3D(0.0f, 1.0f, 0.0f));
 		
 		elapsedTime = 0.0f;
+		gameSound.loop();
 	}
 
 	@Override
@@ -113,24 +128,30 @@ public class First3D_Core implements ApplicationListener
 			}
 		}
 		
+		if(cam.eye.y == 30.0f && System.currentTimeMillis() - this.wonTime > 5000){
+			Gdx.app.exit();
+		}
+		
 		//the player starts sinking if he stands idle for too long
-		/*if(System.currentTimeMillis() - idleTime > 1500 && cam.eye.y > 0.1f){
+		if(System.currentTimeMillis() - idleTime > 1500 && cam.eye.y > 0.1f && !this.won){
 			cam.eye.y -= 0.0025f;
 			deadTime = System.currentTimeMillis();
-		}*/
+		}
 		
 		if(!dead){
-			if(Gdx.input.isKeyPressed(Input.Keys.UP))
-			{ 
-				idleTime = System.currentTimeMillis();
-				cam.eye.y = 1.0f;
-				cam.slide(0.0f, 0.0f, -5.0f * deltaTime);
-			}
-			if(Gdx.input.isKeyPressed(Input.Keys.DOWN))
-			{
-				idleTime = System.currentTimeMillis();
-				cam.eye.y = 1.0f;
-				cam.slide(0.0f, 0.0f, 5.0f * deltaTime);
+			if(!won){
+				if(Gdx.input.isKeyPressed(Input.Keys.UP))
+				{ 
+					idleTime = System.currentTimeMillis();
+					cam.eye.y = 1.0f;
+					cam.slide(0.0f, 0.0f, -5.0f * deltaTime);
+				}
+				if(Gdx.input.isKeyPressed(Input.Keys.DOWN))
+				{
+					idleTime = System.currentTimeMillis();
+					cam.eye.y = 1.0f;
+					cam.slide(0.0f, 0.0f, 5.0f * deltaTime);
+				}
 			}
 			if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
 			{
@@ -181,6 +202,19 @@ public class First3D_Core implements ApplicationListener
 			}
 		}
 		
+		//the player wins if he touches the globe
+		if(Math.sqrt(Math.pow(endPoint.x - cam.eye.x, 2) + Math.pow(endPoint.z - cam.eye.z, 2)) < 0.5f){
+			this.wonTime = System.currentTimeMillis();
+			this.won = true;
+			this.cam.eye.x = 10;
+			this.cam.eye.y = 30;
+			this.cam.eye.z = 10;
+			
+			float[] materialAmbience = {7.0f, 7.0f, 7.0f, 1.0f};
+			Gdx.gl11.glMaterialfv(GL11.GL_FRONT, GL11.GL_AMBIENT, materialAmbience, 0);
+			
+			winSound.play();
+		}
 
 		if(Gdx.input.isKeyPressed(Input.Keys.R))
 		{
@@ -210,7 +244,7 @@ public class First3D_Core implements ApplicationListener
 		cam.setModelViewMatrix();
 		
 
-		float[] lightDiffuse = {0.8f, 0.8f, 0.8f, 1.0f};
+		float[] lightDiffuse = {0.7f, 0.7f, 0.7f, 1.0f};
 		Gdx.gl11.glLightfv(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, lightDiffuse, 0);
 
 		float[] lightPosition = {cam.eye.x, cam.eye.y+2, cam.eye.z, 1.0f};
@@ -222,7 +256,7 @@ public class First3D_Core implements ApplicationListener
 		float[] lightPosition1 = {cam.eye.x, cam.eye.y, cam.eye.z, 0.0f};
 		Gdx.gl11.glLightfv(GL11.GL_LIGHT1, GL11.GL_POSITION, lightPosition1, 0);*/
 		
-		/*float[] lightAmbience = {1.5f, 1.5f, 1.5f, 1.0f};
+		/*float[] lightAmbience = {0.2f, 0.2f, 0.2f, 1.0f};
 		Gdx.gl11.glLightfv(GL11.GL_LIGHT1, GL11.GL_AMBIENT, lightAmbience, 0);
 		
 		float[] lightPostition1 = {cam.eye.x, cam.eye.y+1, cam.eye.z, 1.0f};
@@ -246,9 +280,17 @@ public class First3D_Core implements ApplicationListener
 		//movCube.display();
 
 		Gdx.gl11.glPushMatrix();
-		Gdx.gl11.glTranslatef(1.0f, 2.0f, 1.0f);
-		Gdx.gl11.glRotatef(rotationAngle, 0.0f, 1.0f, 0.0f);
-		//this.cube.draw();
+		Gdx.gl11.glTranslatef(10.0f, 30.0f, 10.0f);
+		Gdx.gl11.glScalef(5.0f, 5.0f, 5.0f);
+		//Gdx.gl11.glRotatef(rotationAngle, 0.0f, 1.0f, 0.0f);
+		this.cube.draw();
+		Gdx.gl11.glPopMatrix();
+		
+		Gdx.gl11.glPushMatrix();
+		Gdx.gl11.glTranslatef(endPoint.x, 1.0f, endPoint.z);
+		Gdx.gl11.glScalef(0.3f, 0.3f, 0.3f);
+		Gdx.gl11.glRotatef(rotationAngle, 0.0f, 0.1f, 0.0f);
+		sphere.draw();
 		Gdx.gl11.glPopMatrix();
 		
 		this.drawFloor();
@@ -295,7 +337,7 @@ public class First3D_Core implements ApplicationListener
 					
 					startingPoints.add(new Point3D(Float.parseFloat(w[1]), 1.0f, Float.parseFloat(w[2].trim())));
 				}
-				else if(s.substring(0,8).equalsIgnoreCase("finish")){
+				else if(s.substring(0,6).equalsIgnoreCase("finish")){
 					String [] w = s.split(",");
 					
 					endPoints.add(new Point3D(Float.parseFloat(w[1]), 1.0f, Float.parseFloat(w[2].trim())));
@@ -306,8 +348,16 @@ public class First3D_Core implements ApplicationListener
 			}
 		}
 		Random r = new Random();
-		cam = new Camera(startingPoints.get(r.nextInt(startingPoints.size)), 
-				new Point3D((float)SIZE / 2, 1.0f, (float)SIZE / 2), new Vector3D(0.0f, 1.0f, 0.0f));
+		
+		Point3D startingPoint = startingPoints.get(r.nextInt(startingPoints.size));
+		cam = new Camera(startingPoint, new Point3D((float)SIZE / 2, 1.0f, (float)SIZE / 2), new Vector3D(0.0f, 1.0f, 0.0f));
+		
+		this.endPoint = endPoints.get(r.nextInt(endPoints.size));
+		
+		while(endPoint.x == startingPoint.x && endPoint.z == startingPoint.z){
+			endPoint = endPoints.get(r.nextInt(endPoints.size));
+		}
+
 	}
 	
 	private void drawBorder(){
